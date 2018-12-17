@@ -1,0 +1,21 @@
+[Unit]
+Description=proxy
+Requires=network.target docker.service data.mount
+After=network.target docker.service data.mount
+
+[Service]
+Restart=always
+RestartSec=15
+ExecStartPre=-/usr/bin/docker rm -f proxy
+ExecStart=/usr/bin/docker run \
+  --net=host \
+  --name=proxy \
+  -p 80:80 \
+  -v /data/artifactory/nginx/conf.d:/etc/nginx/conf.d \
+  -v /data/artifactory/nginx/ssl:/etc/nginx/ssl \
+  nginx:latest
+
+ExecStop=-/usr/bin/docker -t 10 stop proxy
+
+[Install]
+WantedBy=multi-user.target

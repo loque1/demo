@@ -1,0 +1,28 @@
+---
+- name: 
+  yum:
+    name: lvm2
+    state: present 
+
+- name: vgcreate
+  lvg:
+    vg: vgdata
+    pvs: /dev/xvdb
+
+- name: lvcreate
+  lvol:
+    vg: vgdata
+    lv: lvdata
+    size: 100%FREE 
+
+- name: create file system
+  filesystem:
+    fstype: "{{ fs_type | default('xfs') }}"
+    dev: /dev/vgdata/lvdata
+
+- name: mount logical volume
+  mount:
+    name: "{{ mount_dir | default('/data') }}"
+    src: /dev/vgdata/lvdata
+    fstype: "{{ fs_type | default('xfs') }}"
+    state: mounted

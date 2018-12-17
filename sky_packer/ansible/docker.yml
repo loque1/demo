@@ -1,0 +1,21 @@
+---
+
+- name: docker
+  hosts: all
+  become: yes
+  gather_facts: False
+  pre_tasks:
+  - name: Install python for Ansible
+    raw: test -e /usr/bin/python || ( yum -y update && yum install -y python2 ) # centOS
+    changed_when: False
+  - name: yum check
+    raw: test -e /
+  - setup: # aka gather_facts
+  post_tasks:
+  - name : remove default yum repo's
+    file:
+     state: absent
+     path: /etc/yum.repos.d/
+  roles:
+   - { role: repo }
+   - { role: dockerbase, tags: ["docker"] }

@@ -1,0 +1,9 @@
+#!/usr/bin/with-contenv /bin/bash 
+#
+#
+
+[[ ! $(getent passwd ${APP_USER}) ]] && addgroup -g ${APP_GROUP_UID} -S ${APP_GROUP} && adduser -u ${APP_USER_UID} -S ${APP_USER} -G ${APP_GROUP}
+
+#INSTANCEID=$(basename "$(cat /proc/1/cpuset)")
+
+#export INSTANCEID

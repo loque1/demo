@@ -1,0 +1,19 @@
+[Unit]
+Description=repo
+Requires=network.target docker.service data.mount
+After=network.target docker.service data.mount
+
+[Service]
+Restart=always
+RestartSec=15
+ExecStartPre=-/usr/bin/docker rm -f repo
+ExecStart=/usr/bin/docker run \
+  --name=repo \
+  -p 8081:8081 \
+  -v /data/artifactory/data:/var/opt/jfrog/artifactory \
+  -v /data/artifactory/conf:/artifactory_extra_conf \
+  docker.bintray.io/jfrog/artifactory-pro:6.0.0
+ExecStop=-/usr/bin/docker -t 10 stop repo
+
+[Install]
+WantedBy=multi-user.target

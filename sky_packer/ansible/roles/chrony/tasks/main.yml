@@ -1,0 +1,25 @@
+---
+- name: Install required bastion system packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - chrony 
+
+- name: Copy shared key
+  copy:
+    src: "{{ role_path   }}/files/chrony.conf"
+    dest: /etc/chrony.conf
+    owner: centos
+    group: centos
+  notify: Start chronyd
+
+- name: Check chrony 
+  command: chronyc sources -v
+  register: chrony_sources
+
+- debug: var=chrony_sources.stdout_lines
+
+- name: Verify chrony  
+  command: chronyc tracking
+  register: chrony_tracking
+
+- debug: var=chrony_tracking.stdout_lines

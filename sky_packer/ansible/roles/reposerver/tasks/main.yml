@@ -1,0 +1,90 @@
+---
+- name: Pull artifactory image
+  command: docker pull docker.bintray.io/jfrog/artifactory-pro:6.0.0
+
+- name: Pull nginx image
+  command: docker pull nginx:latest
+
+- name: Create repo data directory
+  file: 
+    path: /data/artifactory
+    state: directory
+
+- name: Create additional repo directories
+  file: 
+    path: "/data/artifactory/{{ item }}"
+    state: directory
+  with_items:
+      - data
+      - nginx
+      - conf
+
+- name: Create additional nginx directories
+  file: 
+    path: "/data/artifactory/nginx/{{ item }}"
+    state: directory
+  with_items:
+      - conf.d
+      - ssl
+
+- name: Copy reposervers extra conf files
+  copy:
+    src: "{{ role_path }}/files/artifactory/{{ item }}"
+    dest: "/data/artifactory/conf/{{ item }}"
+    mode: 0644
+  with_items:
+     - artifactory.lic
+     - artifactory.config.latest.xml
+
+- name: Copy reposerver systemd unit
+  copy:
+    src: "{{ role_path  }}/files/systemd/repo.service"
+    dest: /etc/systemd/system/repo.service
+    mode: 0644
+  notify: Start repo
+
+- name: Copy nginx ssl files
+  copy:
+    src: "{{ role_path  }}/files/nginx/ssl/{{ item }}"
+    dest: "/data/artifactory/nginx/ssl/{{ item }}"
+    mode: 0644
+  with_items:
+      - example.pem
+      - example.key
+
+- name: Copy nginx artifactory conf files
+  copy:
+    src: "{{ role_path }}/files/nginx/conf.d/{{ item }}"
+    dest: "/data/artifactory/nginx/conf.d/{{ item }}"
+    mode: 0644
+  with_items:
+      - nginx.conf
+
+- name: Copy nginx server conf files
+  copy:
+    src: "{{ role_path }}/files/nginx/{{ item }}"
+    dest: "/data/artifactory/nginx/{{ item }}"
+    mode: 0644
+  with_items:
+      - nginx.conf
+
+
+- name: Copy proxy systemd unit
+  copy:
+    src: "{{ role_path  }}/files/systemd/proxy.service"
+    dest: /etc/systemd/system/proxy.service
+    mode: 0644
+  notify: Start proxy
+
+#- name: Install docker-py
+#  pip:
+#    name: docker-py
+#    state: present
+
+#- name: Pull artifactory image
+#  docker_image:
+#    name: docker.bintray.io/jfrog/artifactory-pro:6.0.0
+
+#- name: Pull nginx image
+#  docker_image:
+#    name: nginx

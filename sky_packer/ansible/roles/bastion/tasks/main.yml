@@ -1,0 +1,30 @@
+---
+- name: Install required bastion system packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - tmux 
+    - policycoreutils-python
+
+- name: Copy shared key
+  copy:
+    src: "{{ role_path   }}/files/sky_shared.pem" 
+    dest: /home/centos/.ssh/sky_shared.pem
+    owner: centos
+    group: centos
+    mode: 0644
+
+
+- name: Change the Bastion port from 22 to 6667
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: '#Port 22'
+    replace: 'Port 6667'
+
+- name: Set selinux for alternate SSH port
+  seport:
+    ports: "6667"
+    proto: "tcp"
+    setype: "ssh_port_t"
+    state: "present"
+  notify: Restart sshd
+

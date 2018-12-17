@@ -1,0 +1,59 @@
+---
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=36000
+  sudo: yes
+
+- name: Upgrade APT to the lastest packages
+  action: apt upgrade=safe
+
+- name: Install required system packages
+  apt: pkg={{ item }} state=present
+  with_items:
+    - python-pip
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+
+- name: Docker repository key
+  apt_key:
+    id: 0EBFCD88
+    keyserver: "https://download.docker.com/linux/ubuntu/gpg"
+    state: present
+  register: add_repository_key
+  ignore_errors: true
+
+- name: Docker repo
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+
+#- name: create docker list file
+#  file: path=/etc/apt/sources.list.d/docker.list state=touch
+#
+#- name: Add deb line
+#  lineinfile: dest=/etc/apt/sources.list.d/docker.list line="deb https://download.docker.com/linux/ubuntu xenial stable"
+
+- name: Update apt cache
+  apt: update_cache=yes
+  sudo: yes
+
+- name: Install docker engine
+  apt:
+#    name: "docker-ce=17.12.0~ce-0~ubuntu" 
+    name: "docker-ce=17.09.1~ce-0~ubuntu" 
+    state: installed
+
+- name: Install docker-compose
+  pip: name=docker-compose
+
+- name: Docker | Set docker daemon options
+  template:
+    src: docker.default.j2
+    dest: /etc/default/docker
+    owner: root
+    group: root
+    mode: '0644'
+  notify: 
+    - restart docker
+    

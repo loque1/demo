@@ -1,0 +1,6 @@
+---
+
+- name: Copy original yum repo file
+  copy:
+      src: "{{ role_path  }}/files/"
+      dest: /etc/yum.repos.d/

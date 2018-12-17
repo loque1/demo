@@ -1,0 +1,41 @@
+---
+
+- name: Set the correct timezone for Europe/London
+  command: timedatectl set-timezone Europe/London
+
+- name: Copy MOTD file
+  template:
+      src: "{{ role_path  }}/templates/motd.j2"
+      dest: /etc/motd
+
+- name: Copy profile file
+  copy:
+      src: "{{ role_path  }}/files/sky.sh"
+      dest: /etc/profile.d/sky.sh
+
+- name: Copy proxy file
+  copy:
+      src: "{{ role_path  }}/files/proxy.sh"
+      dest: /etc/profile.d/proxy.sh
+
+- name: Remove yum.repos.d directory
+  file:
+      state: absent
+      path: /etc/yum.repos.d/
+
+- name: Create yum.repos.d directory
+  file:
+      state: directory
+      path: /etc/yum.repos.d
+
+- name: Copy sky repo
+  copy:
+      src: "{{ role_path }}/files/sky.repo"
+      dest: /etc/yum.repos.d/sky.repo
+
+- name: Install required base system packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - filebeat
+    - auditbeat
+    - telegraf

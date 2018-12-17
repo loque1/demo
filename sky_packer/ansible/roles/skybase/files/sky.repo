@@ -1,0 +1,5 @@
+[sky_repo]
+name=sky_repo
+baseurl=http://repo.sky.local/artifactory/rpm
+enabled=1
+gpgcheck=0

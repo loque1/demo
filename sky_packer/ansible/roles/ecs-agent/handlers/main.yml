@@ -1,0 +1,9 @@
+---
+
+
+- name: Start ecs_service
+  systemd:
+    name: docker-container@ecs-agent.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

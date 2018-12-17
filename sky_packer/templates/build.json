@@ -1,0 +1,278 @@
+{
+  "variables": {
+    "region": "eu-west-2",
+    "instance_type": "t2.micro",
+    "aws_profile": "{{ env `AWS_PROFILE` }}",
+    "ssh_username": "centos",
+    "volume_type": "gp2",
+    "repo_volume_size": "100",
+    "repo_fstype": "xfs",
+    "repo_mount_dir": "/data",
+    "management_acc_id": "832646111182",
+    "dev_acc_id": "125402355424"
+  },
+  "builders": [
+    {
+      "name": "ansibleBase",
+      "profile": "{{ user `aws_profile` }}",
+      "ami_name": "amiCentOS7Ansible_{{ timestamp  }}",
+      "associate_public_ip_address": true,
+      "communicator": "ssh",
+      "instance_type": "{{ user `instance_type` }}",
+      "region": "{{ user `aws_region` }}",
+      "security_group_id": "{{ user `security_group_id`  }}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "CentOS Linux 7 x86_64*",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm"
+        },
+        "most_recent": true,
+        "owners": [
+          "{{ user `centos_owner_id` }}"
+        ]
+      },
+      "ssh_username": "{{ user `ssh_username` }}",
+      "subnet_id": "{{ user `subnet_id` }}",
+      "type": "amazon-ebs",
+      "region": "{{user `region`}}",
+      "vpc_id": "{{ user `vpc_id` }}",
+      "tags": {
+          "Name": "amiCentOS7Ansible_{{isotime \"2006-01-02 03-04-05\"}}",
+          "Packer": "true"
+      }
+    },
+    {
+      "name": "baseAnsibleSKY",
+      "profile": "{{ user `aws_profile` }}",
+      "ami_name": "amiSKYAnsibleBase_{{ timestamp }}",
+      "associate_public_ip_address": true,
+      "communicator": "ssh",
+      "instance_type": "t2.micro",
+      "region": "{{ user `aws_region` }}",
+      "security_group_id": "{{ user `security_group_id` }}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "CentOS Linux 7 x86_64*",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm"
+        },
+        "most_recent": true,
+        "owners": [
+          "{{ user `centos_owner_id` }}"
+        ]
+      },
+      "ssh_username": "{{ user `ssh_username` }}",
+      "subnet_id": "{{ user `subnet_id` }}",
+      "type": "amazon-ebs",
+      "vpc_id": "{{ user `vpc_id` }}",
+      "tags": {
+          "Name": "amiSKYAnsibleBase_{{isotime \"2006-01-02 03-04-05\"}}",
+          "Packer": "true"
+      }
+    },
+    {
+      "name": "ansibleBastion",
+      "profile": "{{ user `aws_profile` }}",
+      "ami_name": "amiCentOS7AnsibleBastion_{{ timestamp }}",
+      "associate_public_ip_address": true,
+      "communicator": "ssh",
+      "instance_type": "t2.micro",
+      "region": "{{ user `aws_region` }}",
+      "security_group_id": "{{ user `security_group_id` }}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "amiSKYAnsibleBase_*",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm"
+        },
+        "most_recent": true,
+        "owners": [
+           "self"
+        ]
+      },
+      "ssh_username": "{{ user `ssh_username` }}",
+      "subnet_id": "{{ user `subnet_id` }}",
+      "type": "amazon-ebs",
+      "vpc_id": "{{ user `vpc_id` }}",
+      "tags": {
+          "Name": "amiCentOS7AnsibleBastion_{{isotime \"2006-01-02 03-04-05\"}}",
+          "Packer": "true"
+      }
+    },
+    {
+      "name": "ansibleRepo",
+      "type": "amazon-ebs",
+      "profile": "{{ user `aws_profile` }}",
+      "ami_name": "amiCentOS7AnsibleRepo_{{ timestamp }}",
+      "associate_public_ip_address": true,
+      "communicator": "ssh",
+      "instance_type": "t2.micro",
+      "region": "{{ user `aws_region` }}",
+      "security_group_id": "{{ user `security_group_id` }}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "amiCentOS7AnsibleDocker_*",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm"
+        },
+        "most_recent": true,
+        "owners": [
+           "self"
+        ]
+      },
+      "ami_block_device_mappings": [ 
+        {
+          "device_name": "/dev/xvdb",
+          "volume_type": "gp2",
+          "volume_size": "{{user `repo_volume_size`}}",
+          "delete_on_termination": true
+        }
+      ],
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/xvdb",
+          "volume_size": "{{user `repo_volume_size`}}",
+          "volume_type": "{{user `volume_type` }}",
+          "delete_on_termination": true
+        } 
+      ],
+      "ssh_username": "{{ user `ssh_username` }}",
+      "run_volume_tags": {
+          "Name": "repoData"
+      },
+      "subnet_id": "{{ user `subnet_id` }}",
+      "type": "amazon-ebs",
+      "vpc_id": "{{ user `vpc_id` }}",
+      "tags": {
+          "Name": "amiCentOS7AnsibleRepo_{{isotime \"2006-01-02 03-04-05\"}}",
+          "Packer": "true"
+      }
+    },
+    {
+      "name": "baseSKYAnsibleDocker",
+      "access_key": "{{ user `aws_access_key` }}",
+      "ami_name": "amiCentOS7AnsibleDocker_{{ timestamp }}",
+      "profile": "{{ user `aws_profile` }}",
+      "associate_public_ip_address": true,
+      "communicator": "ssh",
+      "instance_type": "t2.micro",
+      "region": "{{ user `aws_region` }}",
+      "secret_key": "{{ user `aws_secret_key` }}",
+      "security_group_id": "{{ user `security_group_id` }}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "amiSKYAnsibleBase_*",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm"
+        },
+        "most_recent": true,
+        "owners": [
+           "self"
+        ]
+      },
+      "ssh_username": "{{ user `ssh_username` }}",
+      "subnet_id": "{{ user `subnet_id` }}",
+      "type": "amazon-ebs",
+      "vpc_id": "{{ user `vpc_id` }}",
+      "tags": {
+          "Name": "amiCentOS7AnsibleDocker_{{isotime \"2006-01-02 03-04-05\"}}",
+          "Packer": "true"
+      }
+    },
+    {
+      "name": "baseSKYAnsibleECSDocker",
+      "access_key": "{{ user `aws_access_key` }}",
+      "ami_name": "amiCentOS7AnsibleECSDocker_{{ timestamp }}",
+      "profile": "{{ user `aws_profile` }}",
+      "associate_public_ip_address": true,
+      "communicator": "ssh",
+      "instance_type": "t2.micro",
+      "region": "{{ user `aws_region` }}",
+      "secret_key": "{{ user `aws_secret_key` }}",
+      "security_group_id": "{{ user `security_group_id` }}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "amiSKYAnsibleBase_*",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm"
+        },
+        "most_recent": true,
+        "owners": [
+           "self"
+        ]
+      },
+      "ssh_username": "{{ user `ssh_username` }}",
+      "subnet_id": "{{ user `subnet_id` }}",
+      "type": "amazon-ebs",
+      "vpc_id": "{{ user `vpc_id` }}",
+      "ami_users" : [ 
+         "{{ user `management_acc_id` }}",
+         "{{ user `dev_acc_id` }}"
+      ],
+      "tags": {
+          "Name": "amiCentOS7AnsibleECSDocker_{{isotime \"2006-01-02 03-04-05\"}}",
+          "Packer": "true"
+      }
+    }
+  ],
+  "post-processors": [
+      {
+        "type": "manifest",
+        "output": "manifest.json",
+        "strip_path": true
+      }
+  ],
+  "provisioners": [
+    {
+      "type": "ansible",
+      "playbook_file": "./ansible/baseserver.yml",
+      "only": [
+        "ansibleBase",
+        "baseAnsibleSKY"
+      ]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "./ansible/bastion.yml",
+      "only": [
+        "ansibleBastion"
+      ]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "./ansible/docker.yml",
+      "only": [
+        "baseSKYAnsibleDocker"
+      ]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "./ansible/reposerver.yml",
+      "extra_arguments": [ "--extra-vars", "mount_dir={{user `repo_mount_dir`}} fs_type={{user `repo_fstype`}} "  ],
+      "only": [
+        "ansibleRepo"
+      ]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "./ansible/ecs.yml",
+      "only": [
+        "baseSKYAnsibleECSDocker"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "mkdir -p /tmp/setup"
+      ],
+      "only": [
+        "baseAnsibleSKY",
+        "ansibleBastion",
+        "baseSKYAnsibleDocker",
+        "ansibleRepo",
+        "baseSKYAnsibleECSDocker"
+      ]
+    }
+  ]
+}

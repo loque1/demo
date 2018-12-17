@@ -1,0 +1,7 @@
+## Specifies the default variables for the admin role, can be overridden by host_vars.
+admin_groups: "sky-admins,adm,sshlogin"
+
+## The default sky root password. This can be overridden by host_vars. crypt
+## with `mkpasswd --method=SHA-512 <password>`
+crypted_root_password: "$6$VIBMFOF28GIMf$krYRufRnVrIe0Od7yoyrrF2yfykY5FhoS2YWYYfizeOMvjxJWeAQnZ2gnkqunPAN4P.5VFfXYoj9.cfgKid/51"
+

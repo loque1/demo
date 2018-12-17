@@ -1,0 +1,10 @@
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "20m",
+    "max-file": "3",
+    "labels" : "APP_NAME,CLUSTER_NAME,APP_REGION_APP_ENV,LOG_TYPE",
+    "env" : "APP_NAME,CLUSTER_NAME,APP_REGION,APP_ENV,LOG_TYPE",
+    "env-regex" : "^(APP_|SKY_|ECS_|CLUSTER_|LOG_)"
+  }
+}

@@ -1,0 +1,163 @@
+#
+# Recommended minimum configuration:
+#
+
+# Example rule allowing access from your local networks.
+# Adapt to list your (internal) IP networks from where browsing
+# should be allowed
+#acl localnet src 172.26.176.96/27 #global_ops1
+#acl localnet src 172.26.176.128/27 #global_ops2
+#acl localnet src 172.26.176.160/27 #global_ops3
+acl localnet src 172.26.177.0/27 #dmz1
+acl localnet src 172.26.177.32/27 #dmz2
+acl localnet src 172.26.177.64/27 # dmz3
+acl alpineRepo dst uk.alpinelinux.org
+acl alpineRepo dst dl-cdn.alpinelinux.org
+acl yumRepo dst mirror.bytemark.co.uk
+acl yumRepo dst mirror.centos.org
+acl yumRepo dst dl.fedoraproject.org
+acl yumRepo dst download.docker.com
+acl yumRepo dst repos.influxdata.com
+acl yumRepo dst artifacts.elastic.co
+acl chefRepo dst supermarket.chef.io
+acl dockerRepo dst hub.docker.com
+acl dockerRepo dst registry-1.docker.io
+acl dockerRepo dst docker.bintray.io
+acl debianRepo dst archive.ubuntu.com
+acl helmRepo dst storage.googleapis.com
+acl saltRepo dst repo.saltstack.com
+acl pypiRepo dst pypi.org
+acl pypiRepo dst pypi.python.org
+acl pypiRepo dst files.pythonhosted.org
+acl rubyRepo dst rubygems.org
+acl npmRepo dst registry.npmjs.org
+acl npmRepo dst fonts.googleapis.com
+acl dockerRepo dst registry-1.docker.io
+acl gitRepo dst github.com
+acl gitRepo dst api.github.com
+acl gitRepo dst codeload.github.com
+acl nugetRepo dst www.nuget.org
+acl opkgRepo dst downloads.openwrt.org
+acl helmRepo dst storage.googleapis.com
+acl javaRepo dst jcenter.bintray.com
+acl javaRepo dst repo.spring.io
+acl javaRepo dst repo.maven.apache.org
+acl javaRepo dst repo1.maven.org
+acl javaRepo dst search.maven.org
+acl javaRepo dst central.maven.org
+acl puppetRepo dst forgeapi.puppetlabs.com
+acl phpRepo dst packagist.org
+acl phpRepo dst packages.drupal.org
+acl phpRepo dst getcomposer.org
+acl phpRepo dst git.drupal.org
+acl phpRepo dst cgit.drupalcode.org
+acl phpRepo dst ftp.drupal.org
+acl externalVideos dst www.youtube.com
+acl externalVideos dst youtu.be
+acl testTool dst www.leapwork.com
+acl chocoRepo dst chocolatey.org
+acl decomIntegration dst dcoms.co.uk
+
+
+
+acl SSL_ports port 443
+acl Safe_ports port 80          # http
+acl Safe_ports port 21          # ftp
+acl Safe_ports port 443         # https
+acl Safe_ports port 70          # gopher
+acl Safe_ports port 210         # wais
+acl Safe_ports port 1025-65535  # unregistered ports
+acl Safe_ports port 280         # http-mgmt
+acl Safe_ports port 488         # gss-http
+acl Safe_ports port 591         # filemaker
+acl Safe_ports port 777         # multiling http
+acl CONNECT method CONNECT
+
+
+#
+# Recommended minimum Access Permission configuration:
+#
+# Deny requests to certain unsafe ports
+http_access deny !Safe_ports
+
+# Deny CONNECT to other than secure SSL ports
+#http_access deny CONNECT !SSL_ports
+
+# Only allow cachemgr access from localhost
+http_access allow localhost manager
+http_access deny manager
+
+# We strongly recommend the following be uncommented to protect innocent
+# web applications running on the proxy server who think the only
+# one who can access services on "localhost" is a local user
+#http_access deny to_localhost
+http_access allow localnet
+http_access allow localhost
+http_access allow alpineRepo
+http_access allow saltRepo
+http_access allow pypiRepo
+http_access allow rubyRepo
+http_access allow yumRepo
+http_access allow dockerRepo
+http_access allow npmRepo
+http_access allow helmRepo
+http_access allow javaRepo
+http_access allow chefRepo
+http_access allow debianRepo
+http_access allow helmRepo
+http_access allow puppetRepo
+http_access allow phpRepo
+http_access allow gitRepo
+http_access allow nugetRepo
+http_access allow opkgRepo
+http_access allow externalVideos
+http_access allow testTool
+http_access allow chocoRepo
+http_access allow decomIntegration
+
+#
+# INSERT YOUR OWN RULE(S) HERE TO ALLOW ACCESS FROM YOUR CLIENTS
+#
+
+# Example rule allowing access from your local networks.
+# Adapt localnet in the ACL section to list your (internal) IP networks
+# from where browsing should be allowed
+http_access allow localnet
+http_access allow localhost
+
+# And finally deny all other access to this proxy
+http_access deny all
+
+# Squid normally listens to port 3128
+http_port 3128
+
+# Uncomment and adjust the following to add a disk cache directory.
+ cache_dir ufs /var/spool/squid 2000 16 256
+
+# Leave coredumps in the first cache dir
+ coredump_dir /var/spool/squid
+
+# Maxim obejext
+maximum_object_size 512 MB
+
+negative_ttl 0
+
+#cache deny all
+
+#
+# Add any of your own refresh_pattern entries above these.
+#
+refresh_pattern \.rpm$            60    20%     10080
+refresh_pattern ^ftp:           1440    20%     10080
+refresh_pattern ^gopher:        1440    0%      1440
+refresh_pattern -i (/cgi-bin/|\?) 0     0%      0
+refresh_pattern .               0       20%     4320
+
+#refresh_pattern ^ftp: 1440 20% 10080
+#refresh_pattern ^gopher: 1440 0% 1440
+#refresh_pattern -i \.(gif|png|jpg|jpeg|ico)$ 10080 90% 43200 override-expire ignore-no-cache ignore-no-store ignore-private
+#refresh_pattern -i \.(iso|avi|wav|mp3|mp4|mpeg|swf|flv|x-flv)$ 43200 90% 432000 override-expire ignore-no-cache ignore-no-store ignore-private
+#refresh_pattern -i \.(deb|rpm|exe|zip|tar|tgz|ram|rar|bin|ppt|doc|tiff)$ 10080 90% 43200 override-expire ignore-no-cache ignore-no-store ignore-private
+#refresh_pattern -i \.index.(html|htm)$ 0 40% 10080
+#refresh_pattern -i \.(html|htm|css|js)$ 1440 40% 40320
+#refresh_pattern . 0 40% 40320

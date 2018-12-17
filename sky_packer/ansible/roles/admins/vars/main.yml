@@ -1,0 +1,10 @@
+## Non-overridable variables for the admin role. Variables declared here will
+## trump precidence for all other variables.
+##
+## A user should only be defined in a single user list or their group
+## memberships will conflict.
+
+admin_users:
+- name: ihussain
+  key: "{{ lookup('file', 'ssh-keys/ihussain.pub') }}" 
+  groups: "sky-admins,adm,docker"

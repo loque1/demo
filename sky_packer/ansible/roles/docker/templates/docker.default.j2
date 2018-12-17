@@ -1,0 +1,12 @@
+## WARNING - This file is managed by ansible.
+## {{ ansible_managed }}
+# Docker Upstart and SysVinit configuration file
+
+# Customize location of Docker binary (especially for development testing).
+#DOCKER="/usr/local/bin/docker"
+
+# Use DOCKER_OPTS to modify the daemon startup options.
+{% if docker_opts != "" %}
+DOCKER_OPTS="{% for opt in docker_opts %}{{ opt }} {% endfor %}"
+{% endif %}
+

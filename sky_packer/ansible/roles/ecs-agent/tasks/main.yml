@@ -1,0 +1,53 @@
+---
+
+- name: Update sysctl with ipv4
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: "net.ipv4.conf.all.route_localnet = 1"
+
+- name: Restart sysctl for ipv4
+  command: sysctl -p /etc/sysctl.conf
+
+- name: IPtable Prerouting dnat rule for ECS-agent
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: tcp
+    destination: 169.254.170.2
+    destination_port: 80
+    to_destination: "127.0.0.1:51769"
+    jump: DNAT
+    comment: Prerouting rule for ECS-agenpt
+
+
+- name: IPtable OUTPUT redirect rule for ECS-agent
+  iptables:
+    table: nat
+    chain: OUTPUT
+    protocol: tcp
+    destination: 169.254.170.2
+    destination_port: 80
+    to_ports: 51679
+    match: tcp
+    jump: REDIRECT
+    comment: Redirect output rule for ECS-agent
+
+- name: Save IPtables rules so they persist after reboot
+  shell: iptables-save > /etc/sysconfig/iptables
+
+- name: Create additional Ecs-agent directories
+  file: 
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /var/log/ecs 
+    - /var/lib/ecs/data
+    -  /etc/ecs
+
+
+- name: Crete SystemD unit or ecs-agent
+  copy:
+    src: "{{ role_path }}/files/systemd/docker-container@ecs-agent.service"
+    dest: /etc/systemd/system/docker-container@ecs-agent.service
+    mode: 0644
+  notify: Start ecs_service

@@ -1,0 +1,44 @@
+## Add groups.
+- name: create group sky-admins
+  group: name={{ item }} state=present
+  with_items:
+    - sky-admins
+    - sshlogin
+
+- name: create group docker
+  group: name=docker state=present
+
+- name: add admins into into docker group
+  user: name={{ item.name }} groups=docker state=present
+  with_items: "{{ admin_users }}"
+
+## Set the root password, in case someone screws up the sudoers file.
+##- name: setting root password
+##  user: name=root password="{{ crypted_root_password }}" update_password=always
+
+## Create accounts for sky admins. groups definition chain = vars, defaults, host_vars.
+
+- name: add sky admin users
+  user: name={{ item.name }} shell=/bin/bash groups="{{ item.groups }}" state=present
+  with_items: "{{ admin_users }}"
+
+- name: add sky admin ssh keys
+  authorized_key: user={{ item.name }} key="{{ item.key }}"
+  with_items: "{{ admin_users }}"
+
+- name: add sky admin sudoers rules
+  lineinfile: dest=/etc/sudoers.d/sky-admins owner=root group=root mode=0440
+              line="%sky-admins ALL=(ALL) NOPASSWD:ALL"
+              state=present
+              create=yes
+              validate='visudo -cf %s'
+
+ #- name: add ubuntu into sshlogin group
+ # user: name=ubuntu groups=sshlogin state=present
+
+## Delete accounts for leavers.
+- name: remove old user accounts
+  user: name={{ item.name }} state=absent remove=yes
+  with_items: "{{ delete_users }}"
+  when: delete_users
+

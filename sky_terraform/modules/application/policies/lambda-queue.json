@@ -1,0 +1,35 @@
+{
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "sqs:DeleteMessage",
+            "sqs:ReceiveMessage"
+          ],
+          "Resource": "arn:aws:sqs:${region}:${account_id}:${service}"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "lambda:InvokeFunction"
+          ],
+          "Resource": "arn:aws:lambda:${region}:${account_id}:function:${service}*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": "logs:CreateLogGroup",
+          "Resource": "arn:aws:logs:${region}:${account_id}:*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          "Resource": [
+            "arn:aws:logs:${region}:${account_id}:log-group:/aws/lambda/${service}:*"
+          ]
+        }
+      ]
+}

@@ -1,0 +1,13 @@
+---
+
+- name: "Include installation for RedHat"
+  include: "{{ role_path  }}/tasks/install.yml"
+  when: ansible_os_family == "RedHat"
+  tags:
+    - install
+
+- name: "Include configuration for RedHat"
+  include: "{{ role_path }}/tasks/configure.yml"
+  when: ansible_os_family == "RedHat"
+  tags:
+    - configure

@@ -1,0 +1,56 @@
+---
+- name: Install docker-py for ansible
+  pip:
+    name: docker-py
+    state: present
+
+- name: Copy docker yum repo file
+  copy:
+    src: "{{ role_path  }}/files/yum/docker.repo"
+    dest: "/etc/yum.repos.d/docker.repo"
+    owner: root
+    group: root
+    mode: 0644 
+
+- name: Update module load to add overlay support
+  copy:
+    content: "overlay"
+    dest: /etc/modules-load.d/overlay.conf
+
+- name: Create docker.service.d directory
+  file: 
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+
+- name: Copy systemd docker overides file
+  copy:
+    src: "{{ role_path  }}/files/systemd/override.conf"
+    dest: "/etc/systemd/system/docker.service.d/override.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create docker.service.d directory
+  file: 
+    path: /etc/docker
+    state: directory
+
+- name: Copy Docker configuration 
+  copy:
+    src: "{{ role_path  }}/files/daemon.json"
+    dest: "/etc/docker/daemon.json"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install docker-engine
+  yum:
+    name: docker-engine
+    state: present
+
+- name: Enable docker
+  systemd:
+    name: docker
+    enabled: yes
+  notify: Restart docker 
+

@@ -1,0 +1,88 @@
+---
+
+- name: Set up correct timezone Europe/London
+  command: timedatectl set-timezone Europe/London
+
+- name: upgrade all packages
+  yum: 
+   name: '*' 
+   state: latest
+
+- name: Install required base system packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - vim
+    - python2-pip
+    - curl
+    - nmap-ncat 
+    - bind-utils 
+    - iotop 
+    - xz 
+    - zip 
+    - unzip 
+    - tar 
+    - lsof 
+    - yum-plugin-versionlock 
+    - jq 
+    - lvm2
+    - ipset 
+    - uuid 
+    - python2-boto
+    - ansible
+
+- name: Remove system packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - postfix
+
+- name: Clean yum cache folder
+  file:
+    state: absent
+    path: /var/cache/yum/
+
+- name: Disable selinux temp
+  command: setenforce 0
+
+- name: Disable selinux perm
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Copy authorized keys
+  copy:
+    src: "{{ role_path  }}/files/authorized_keys"
+    dest: "/home/centos/.ssh/authorized_keys"
+    owner: centos
+    group: centos
+    mode: 0600
+
+- name: Create ansible directory
+  file: 
+    path: "/etc/ansible"
+    state: directory
+
+- name: Copy Ansible AWS dynamic inventory code
+  copy:
+    src: "{{ role_path  }}/files/ansible/ec2.py"
+    dest: "/etc/ansible/ec2.py"
+    owner: root
+    group: root
+    mode: 0755 
+
+- name: Add localhost to ansible hosts file
+  lineinfile:
+    path: /etc/ansible/hosts
+    line: localhost ansible_connection=local
+
+- name: Copy Ansible AWS dynamic inventory configuration
+  copy:
+    src: "{{ role_path  }}/files/ansible/ec2.ini"
+    dest: "/etc/ansible/ec2.ini"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: 'Install AWS CLI'
+  pip: 
+    name: awscli
+    state: latest

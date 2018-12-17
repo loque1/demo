@@ -1,0 +1,14 @@
+---
+- name: Start repo
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: repo.service
+    enabled: True
+
+- name: Start proxy
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: proxy.service
+    enabled: True

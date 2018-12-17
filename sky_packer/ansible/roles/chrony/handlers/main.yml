@@ -1,0 +1,7 @@
+---
+- name: Start chronyd
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: chronyd.service
+    enabled: True

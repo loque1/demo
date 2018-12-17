@@ -1,0 +1,4 @@
+docker_opts:
+  - " -H unix:///var/run/docker.sock"
+  - " --bip=172.17.42.1/16"
+
